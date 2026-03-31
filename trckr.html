@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Спортивный Адвент-Календарь 2026</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+    
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      padding: 15px;
+      transform: scale(0.85);
+      transform-origin: top center;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+
+    header {
+      text-align: center;
+      padding: 30px 20px 20px;
+      background: rgba(0,0,0,0.75);
+    }
+    h1 {
+      margin: 0;
+      font-size: 2.9em;
+      color: #ffcc00;
+      text-shadow: 0 0 10px #000;
+    }
+    .subtitle {
+      font-size: 1.15em;
+      opacity: 0.9;
+      margin-top: 10px;
+    }
+
+    .days-bar {
+      padding: 25px 25px 20px;
+      background: rgba(0,0,0,0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+    .days-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .day-box {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid #777;
+      user-select: none;
+    }
+    .day-box.completed { 
+      background: #28a745; 
+      border-color: #28a745; 
+      color: white; 
+      font-size: 1.55em;
+    }
+    .day-box.partial { 
+      background: #dc3545; 
+      border-color: #dc3545; 
+      color: white; 
+    }
+    .day-box.current { 
+      border: 4px solid #ffcc00; 
+      background: rgba(255,204,0,0.3); 
+      transform: scale(1.1);
+    }
+    .day-box:hover { transform: scale(1.13); }
+
+    .main-content {
+      padding: 35px 30px 45px;
+      text-align: center;
+    }
+    .current-day {
+      font-size: 2.25em;
+      margin-bottom: 20px;
+      color: #ffcc00;
+    }
+    .exercise-list {
+      max-width: 520px;
+      margin: 25px auto;
+      text-align: left;
+    }
+    .exercise {
+      background: rgba(255,255,255,0.12);
+      margin: 13px 0;
+      padding: 17px 20px;
+      border-radius: 13px;
+      font-size: 1.22em;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .exercise input[type="checkbox"] {
+      width: 26px;
+      height: 26px;
+      accent-color: #28a745;
+    }
+    .complete-btn {
+      margin-top: 30px;
+      padding: 15px 55px;
+      font-size: 1.32em;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+    .complete-btn:hover { background: #218838; }
+
+    .recovery {
+      font-size: 1.4em;
+      color: #90ee90;
+      background: rgba(40,167,69,0.25);
+      padding: 35px;
+      border-radius: 16px;
+      margin: 25px auto;
+      max-width: 580px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>СПОРТИВНЫЙ АДВЕНТ</h1>
+      <p class="subtitle">Твой ежедневный вызов — Дни 1–30</p>
+    </header>
+
+    <div class="days-bar" id="daysBar"></div>
+
+    <div class="main-content" id="mainContent">
+      <div class="current-day" id="dayTitle"></div>
+      <div id="dayContent"></div>
+      <button class="complete-btn" id="completeBtn">Завершить день ✓</button>
+    </div>
+  </div>
+
+  <script>
+    // Расширенный список из 20 рабочих прямых ссылок на спортивные обои
+    const sportBackgrounds = [
+      "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg",
+      "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg",
+      "https://images.pexels.com/photos/260352/pexels-photo-260352.jpeg",
+      "https://images.pexels.com/photos/416778/pexels-photo-416778.jpeg",
+      "https://images.pexels.com/photos/863977/pexels-photo-863977.jpeg",
+      "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg",
+      "https://images.pexels.com/photos/3775605/pexels-photo-3775605.jpeg",
+      "https://images.pexels.com/photos/221210/pexels-photo-221210.jpeg",
+      "https://images.pexels.com/photos/449860/pexels-photo-449860.jpeg",
+      "https://images.pexels.com/photos/1547248/pexels-photo-1547248.jpeg",
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48",
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438",
+      "https://images.unsplash.com/photo-1576678927484-cc907957088c",
+      "https://images.unsplash.com/photo-1549476464-37392f7171c8",
+      "https://images.unsplash.com/photo-1605296867304-46e3b9b4c3f4",
+      "https://images.unsplash.com/photo-1599058917212-9e7e4c8e3e3d?ixlib=rb-4.0.3", // исправленная версия
+      "https://images.unsplash.com/photo-1583454110551-21f456e1e3c7",
+      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f",
+      "https://images.unsplash.com/photo-1526506118085-60b3c0e2f9e0"
+    ];
+
+    const workouts = {
+      1: ["30 приседаний", "30 раз пресс", "30 сек. планка", "8 отжиманий"],
+      2: ["30 приседаний", "30 раз пресс", "30 сек. планка", "9 отжиманий"],
+      3: ["35 приседаний", "35 раз пресс", "35 сек. планка", "10 отжиманий"],
+      4: ["35 приседаний", "35 раз пресс", "35 сек. планка", "11 отжиманий"],
+      5: ["40 приседаний", "40 раз пресс", "40 сек. планка", "12 отжиманий"],
+      6: ["40 приседаний", "40 раз пресс", "40 сек. планка", "12 отжиманий"],
+      7: ["10 минут растяжки / восстановление"],
+      8: ["45 приседаний", "45 раз пресс", "45 сек. планка", "14 отжиманий"],
+      9: ["45 приседаний", "45 раз пресс", "45 сек. планка", "15 отжиманий"],
+      10: ["50 приседаний", "50 раз пресс", "50 сек. планка", "16 отжиманий"],
+      11: ["50 приседаний", "50 раз пресс", "50 сек. планка", "17 отжиманий"],
+      12: ["55 приседаний", "55 раз пресс", "55 сек. планка", "18 отжиманий"],
+      13: ["55 приседаний", "55 раз пресс", "55 сек. планка", "19 отжиманий"],
+      14: ["15 минут растяжки / восстановление"],
+      15: ["60 приседаний", "60 раз пресс", "60 сек. планка", "20 отжиманий"],
+      16: ["60 приседаний", "60 раз пресс", "60 сек. планка", "21 отжимание"],
+      17: ["65 приседаний", "65 раз пресс", "65 сек. планка", "22 отжимания"],
+      18: ["65 приседаний", "65 раз пресс", "65 сек. планка", "23 отжимания"],
+      19: ["70 приседаний", "70 раз пресс", "70 сек. планка", "24 отжимания"],
+      20: ["70 приседаний", "70 раз пресс", "70 сек. планка", "25 отжиманий"],
+      21: ["20 минут растяжки / восстановление"],
+      22: ["75 приседаний", "75 раз пресс", "75 сек. планка", "26 отжиманий"],
+      23: ["75 приседаний", "75 раз пресс", "75 сек. планка", "27 отжиманий"],
+      24: ["80 приседаний", "80 раз пресс", "80 сек. планка", "28 отжиманий"],
+      25: ["80 приседаний", "80 раз пресс", "80 сек. планка", "29 отжиманий"],
+      26: ["85 приседаний", "85 раз пресс", "85 сек. планка", "30 отжиманий"],
+      27: ["85 приседаний", "85 раз пресс", "85 сек. планка", "31 отжимание"],
+      28: ["25 минут растяжки / восстановление"],
+      29: ["90 приседаний", "90 раз пресс", "90 сек. планка", "32 отжимания"],
+      30: ["95 приседаний", "95 раз пресс", "95 сек. планка", "33 отжимания"]
+    };
+
+    let progress = JSON.parse(localStorage.getItem('adventProgress')) || {};
+    let currentDay = parseInt(localStorage.getItem('currentDay')) || 1;
+    let clickCountOn30 = 0;
+    let lastClickTime = 0;
+
+    const daysBar = document.getElementById('daysBar');
+    const dayTitle = document.getElementById('dayTitle');
+    const dayContent = document.getElementById('dayContent');
+    const completeBtn = document.getElementById('completeBtn');
+
+    function setRandomBackground() {
+      const randomIndex = Math.floor(Math.random() * sportBackgrounds.length);
+      const bgUrl = sportBackgrounds[randomIndex];
+      
+      document.body.style.background = `linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.78)), url('${bgUrl}') center/cover no-repeat fixed`;
+      document.body.style.backgroundAttachment = 'fixed';
+    }
+
+    function renderDaysBar() {
+      daysBar.innerHTML = '';
+
+      for (let row = 0; row < 3; row++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'days-row';
+
+        const start = row * 10 + 1;
+        const end = Math.min(start + 9, 30);
+
+        for (let i = start; i <= end; i++) {
+          const box = document.createElement('div');
+          box.className = 'day-box';
+          box.textContent = i;
+
+          if (progress[i] === 'completed') {
+            box.classList.add('completed');
+            box.innerHTML = '✓';
+          } else if (progress[i] === 'partial') {
+            box.classList.add('partial');
+            box.innerHTML = '✕';
+          }
+
+          if (i === currentDay) box.classList.add('current');
+
+          box.addEventListener('click', () => {
+            currentDay = i;
+            localStorage.setItem('currentDay', currentDay);
+            renderCurrentDay();
+            renderDaysBar();
+
+            if (i === 30) {
+              const now = Date.now();
+              if (now - lastClickTime < 800) {
+                clickCountOn30++;
+                if (clickCountOn30 >= 5) {
+                  if (confirm('⚠️ Сбросить ВЕСЬ прогресс адвента?')) {
+                    localStorage.clear();
+                    progress = {};
+                    currentDay = 1;
+                    clickCountOn30 = 0;
+                    alert('Прогресс полностью сброшен!');
+                    setRandomBackground();
+                    renderDaysBar();
+                    renderCurrentDay();
+                  } else {
+                    clickCountOn30 = 0;
+                  }
+                }
+              } else {
+                clickCountOn30 = 1;
+              }
+              lastClickTime = now;
+            }
+          });
+
+          box.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (progress[i] === 'partial') delete progress[i];
+            else progress[i] = 'partial';
+            localStorage.setItem('adventProgress', JSON.stringify(progress));
+            renderDaysBar();
+          });
+
+          rowDiv.appendChild(box);
+        }
+        daysBar.appendChild(rowDiv);
+      }
+    }
+
+    function renderCurrentDay() {
+      dayTitle.textContent = `День ${currentDay}`;
+
+      const exercises = workouts[currentDay] || [];
+      const isRecovery = exercises.length === 1 && exercises[0].includes('растяжки');
+
+      let html = isRecovery 
+        ? `<div class="recovery">${exercises[0]}</div>` 
+        : `<div class="exercise-list">` + 
+            exercises.map((ex, index) => `
+              <div class="exercise">
+                <input type="checkbox" id="ex${index}" 
+                       ${Array.isArray(progress[currentDay]) && progress[currentDay].includes(index) ? 'checked' : ''} 
+                       onchange="toggleExercise(${index})">
+                <label for="ex${index}">${ex}</label>
+              </div>`).join('') + 
+          `</div>`;
+
+      dayContent.innerHTML = html;
+      completeBtn.textContent = isRecovery ? 'Завершить восстановление ✓' : 'Завершить день ✓';
+    }
+
+    window.toggleExercise = function(index) {
+      if (!Array.isArray(progress[currentDay])) progress[currentDay] = [];
+      const arr = progress[currentDay];
+      if (arr.includes(index)) arr.splice(arr.indexOf(index), 1);
+      else arr.push(index);
+      localStorage.setItem('adventProgress', JSON.stringify(progress));
+    };
+
+    completeBtn.addEventListener('click', () => {
+      const exercises = workouts[currentDay] || [];
+      const isRecovery = exercises.length === 1 && exercises[0].includes('растяжки');
+
+      if (isRecovery) {
+        progress[currentDay] = 'completed';
+      } else {
+        const done = Array.isArray(progress[currentDay]) ? progress[currentDay].length : 0;
+        progress[currentDay] = (done === exercises.length && exercises.length > 0) ? 'completed' : 'partial';
+      }
+
+      localStorage.setItem('adventProgress', JSON.stringify(progress));
+
+      if (currentDay < 30) {
+        currentDay++;
+        localStorage.setItem('currentDay', currentDay);
+      }
+
+      renderDaysBar();
+      renderCurrentDay();
+    });
+
+    // Инициализация
+    setRandomBackground();
+    renderDaysBar();
+    renderCurrentDay();
+  </script>
+</body>
+</html>
