@@ -110,11 +110,19 @@
       display: flex;
       align-items: center;
       gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .exercise:hover {
+      background: rgba(255,255,255,0.22);
+      transform: translateX(8px);
     }
     .exercise input[type="checkbox"] {
       width: 26px;
       height: 26px;
       accent-color: #28a745;
+      pointer-events: none; /* чтобы не мешал клику по строке */
     }
     .complete-btn {
       margin-top: 30px;
@@ -156,7 +164,6 @@
   </div>
 
   <script>
-    // Расширенный список из 20 рабочих прямых ссылок на спортивные обои
     const sportBackgrounds = [
       "https://w.wallhaven.cc/full/45/wallhaven-45jjm5.jpg",
       "https://w.wallhaven.cc/full/01/wallhaven-01o6z9.jpg",
@@ -191,7 +198,7 @@
       16: ["60 приседаний", "60 раз пресс", "60 сек. планка", "21 отжимание"],
       17: ["65 приседаний", "65 раз пресс", "65 сек. планка", "22 отжимания"],
       18: ["65 приседаний", "65 раз пресс", "65 сек. планка", "23 отжимания"],
-      19: ["70 приседаний", "70 раз пресс", "70 сек. планка", "24 отжимания"],
+      19: ["70 приседаний", "70 раз пресс", "70 сек. планка", "24 отжиманий"],
       20: ["70 приседаний", "70 раз пресс", "70 сек. планка", "25 отжиманий"],
       21: ["20 минут растяжки / восстановление"],
       22: ["75 приседаний", "75 раз пресс", "75 сек. планка", "26 отжиманий"],
@@ -218,7 +225,6 @@
     function setRandomBackground() {
       const randomIndex = Math.floor(Math.random() * sportBackgrounds.length);
       const bgUrl = sportBackgrounds[randomIndex];
-      
       document.body.style.background = `linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.78)), url('${bgUrl}') center/cover no-repeat fixed`;
       document.body.style.backgroundAttachment = 'fixed';
     }
@@ -299,27 +305,59 @@
       const exercises = workouts[currentDay] || [];
       const isRecovery = exercises.length === 1 && exercises[0].includes('растяжки');
 
-      let html = isRecovery 
-        ? `<div class="recovery">${exercises[0]}</div>` 
-        : `<div class="exercise-list">` + 
-            exercises.map((ex, index) => `
-              <div class="exercise">
-                <input type="checkbox" id="ex${index}" 
-                       ${Array.isArray(progress[currentDay]) && progress[currentDay].includes(index) ? 'checked' : ''} 
-                       onchange="toggleExercise(${index})">
-                <label for="ex${index}">${ex}</label>
-              </div>`).join('') + 
-          `</div>`;
+      let html = '';
+
+      if (isRecovery) {
+        html = `<div class="recovery">${exercises[0]}</div>`;
+      } else {
+        html = `<div class="exercise-list">`;
+        
+        exercises.forEach((ex, index) => {
+          const isChecked = Array.isArray(progress[currentDay]) && progress[currentDay].includes(index);
+          
+          html += `
+            <div class="exercise" data-index="${index}">
+              <input type="checkbox" id="ex${index}" ${isChecked ? 'checked' : ''}>
+              <label for="ex${index}">${ex}</label>
+            </div>`;
+        });
+        
+        html += `</div>`;
+      }
 
       dayContent.innerHTML = html;
+
+      // Добавляем клик по всей строке
+      if (!isRecovery) {
+        document.querySelectorAll('.exercise').forEach(exerciseEl => {
+          exerciseEl.addEventListener('click', function(e) {
+            // Если кликнули точно по чекбоксу — не дублируем действие
+            if (e.target.type === 'checkbox') return;
+
+            const index = parseInt(this.dataset.index);
+            toggleExercise(index);
+
+            // Обновляем чекбокс визуально
+            const checkbox = this.querySelector(`input[type="checkbox"]`);
+            if (checkbox) checkbox.checked = !checkbox.checked;
+          });
+        });
+      }
+
       completeBtn.textContent = isRecovery ? 'Завершить восстановление ✓' : 'Завершить день ✓';
     }
 
     window.toggleExercise = function(index) {
       if (!Array.isArray(progress[currentDay])) progress[currentDay] = [];
+      
       const arr = progress[currentDay];
-      if (arr.includes(index)) arr.splice(arr.indexOf(index), 1);
-      else arr.push(index);
+      
+      if (arr.includes(index)) {
+        arr.splice(arr.indexOf(index), 1);
+      } else {
+        arr.push(index);
+      }
+      
       localStorage.setItem('adventProgress', JSON.stringify(progress));
     };
 
